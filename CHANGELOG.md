@@ -1,5 +1,33 @@
 # Change Log
 
+## v4.1.11-alpha
+- Updated `composer/installers` dependency.
+- Patch `composer.json` to fix `illuminate/*` dependencies at 5.4 for now
+
+## v4.1.10-alpha
+- Add support for PHP7 runtime errors to be handled in the same way as Exceptions
+- Implement NotFoundExceptionHandler and pass through all NotFoundExceptions to this handler.
+- Implement `redirect.onAlreadyLoggedIn` service (fixes #680)
+- Deprecate `determineRedirectOnLogin` and replace with `redirect.onLogin` service
+- Fix some PSR-2 compliance issues
+
+## v4.1.9-alpha
+- Fixes #780, and more efficient way to collect ids in Unique::getPaginatedQuery
+- Show "user deleted" in activities table (#782)
+- Patched version of `widget-sort2Hash.js` to prevent writing extraneous browser history entries (#712)
+- Improve handling of fatal/parse errors
+
+## v4.1.8-alpha
+- Normalize paths to always have a leading slash when comparing against the CSRF blacklist (#775) (possible breaking change for some environments - please see updated docs at https://learn.userfrosting.com/routes-and-controllers/client-input/csrf-guard#blacklisting-routes)
+- Set `display_errors` to `true` for development configs (#762), move php settings into a common `php` subkey in config files
+- `ShutdownHandler` no longer responsible for logging fatal errors
+- Set up PHP config values in `Core.php` instead of inside the `config` service definition.
+- Reimplement `Builder::exclude` to maintain a list of excluded columns, and then automatically update list of columns to fetch in `get()`
+- Deprecate `Model::queryBuilder` and `Model::export`
+- Update nginx config file from spdy to http2
+- Add Pagespeed block (commented out) to nginx config file
+- Make fpm-php7.0 the default CGI nginx config file
+
 ## v4.1.7-alpha
 - Add the `withTernary` method to the `Unique` trait to allow loading nested child models on ternary relationships.
 - Add skip, take, limit, offset and deprecate withLimit and withOffset in `Unique` trait

@@ -624,6 +624,41 @@ class DatabaseTests extends TestCase
     }
 
     /**
+     * Test the ability of a BelongsToManyThrough relationship to retrieve and count paginated queries.
+     */
+    public function testBelongsToManyThroughPaginated()
+    {
+        $this->generateRolesWithPermissions();
+
+        $user = EloquentTestUser::create(['name' => 'David']);
+
+        $user->roles()->attach([1,2]);
+
+        $paginatedPermissions = $user->permissions()->take(2)->offset(1);
+
+        $this->assertEquals([
+            [
+                'id' => 2,
+                'slug' => 'uri_spit_acid',
+                'pivot' => [
+                    'user_id' => 1,
+                    'permission_id' => 2
+                ]
+            ],
+            [
+                'id' => 3,
+                'slug' => 'uri_slash',
+                'pivot' => [
+                    'user_id' => 1,
+                    'permission_id' => 3
+                ]
+            ]
+        ], $paginatedPermissions->get()->toArray());
+
+        $this->assertEquals(2, $paginatedPermissions->count());
+    }
+
+    /**
      * Test the ability of a BelongsToManyThrough relationship to retrieve structured data on a single model or set of models,
      * eager loading the "via" models at the same time.
      */
@@ -653,6 +688,124 @@ class DatabaseTests extends TestCase
 
         $this->assertBelongsToManyThroughForDavid($usersWithPermissions[0]['permissions']);
         $this->assertBelongsToManyThroughForAlex($usersWithPermissions[1]['permissions']);
+    }
+
+    public function testQueryExclude()
+    {
+        $this->generateRoles();
+        $this->generateJobs();
+        $job = EloquentTestJob::exclude('location_id', 'title')->first();
+        
+        $this->assertEquals([
+            'role_id' => 2,
+            'user_id' => 1
+        ], $job->toArray());
+    }
+
+
+    public function testQueryExcludeOnJoinedTable()
+    {
+        $this->generateRolesWithPermissions();
+
+        $user = EloquentTestUser::create(['name' => 'David']);
+
+        $user->roles()->attach([1,2]);
+
+        $users = EloquentTestUser::with(['permissions' => function ($query) {
+            $query->exclude('slug');
+        }])->get();
+        
+        $this->assertEquals([
+            [
+                'id' => 1,
+                'name' => 'David',
+                'permissions' => [
+                    [
+                        'id' => 1,
+                        'pivot' => [
+                            'user_id' => 1,
+                            'permission_id' => 1
+                        ]
+                    ],
+                    [
+                        'id' => 2,
+                        'pivot' => [
+                            'user_id' => 1,
+                            'permission_id' => 2
+                        ]
+                    ],
+                    [
+                        'id' => 3,
+                        'pivot' => [
+                            'user_id' => 1,
+                            'permission_id' => 3
+                        ]
+                    ]
+                ]
+            ]
+        ], $users->toArray());
+    }
+
+    public function testQueryExcludeUseQualifiedNamesOnJoinedTable()
+    {
+        $this->generateRolesWithPermissions();
+
+        $user = EloquentTestUser::create(['name' => 'David']);
+
+        $user->roles()->attach([1,2]);
+
+        $users = EloquentTestUser::with(['roles' => function ($query) {
+            $query->addSelect('roles.*', 'jobs.*')->leftJoin('jobs', 'jobs.role_id', '=', 'roles.id')
+                    ->exclude('slug', 'jobs.user_id', 'jobs.location_id', 'jobs.role_id');
+        }])->get();
+
+        $this->assertEquals([
+            [
+                'id' => 1,
+                'name' => 'David',
+                'roles' => [
+                    [
+                        'id' => 1,
+                        'title' => null,
+                        'pivot' => [
+                            'user_id' => 1,
+                            'role_id' => 1
+                        ]
+                    ],
+                    [
+                        'id' => 2,
+                        'title' => null,
+                        'pivot' => [
+                            'user_id' => 1,
+                            'role_id' => 2
+                        ]
+                    ]
+                ]
+            ]
+        ], $users->toArray());
+    }
+
+    public function testQueryExcludeWildcard()
+    {
+        $this->generateRoles();
+        $this->generateJobs();
+        $job = EloquentTestJob::select('*')->addSelect('user_id')->exclude('*')->first();
+
+        $this->assertEquals([
+            'user_id' => 1
+        ], $job->toArray());
+
+        $job = EloquentTestJob::select('jobs.*')->addSelect('user_id')->exclude('*')->first();
+
+        $this->assertEquals([
+            'user_id' => 1
+        ], $job->toArray());
+
+        $job = EloquentTestJob::select('*')->addSelect('user_id')->exclude('jobs.*')->first();
+
+        $this->assertEquals([
+            'user_id' => 1
+        ], $job->toArray());
     }
 
     /**
@@ -1151,4 +1304,12 @@ class EloquentTestJob extends EloquentTestModel
 {
     protected $table = 'jobs';
     protected $guarded = [];
+
+    /**
+     * Get the role for this job.
+     */
+    public function role()
+    {
+        return $this->belongsTo('UserFrosting\Tests\Integration\EloquentTestRole', 'role_id');
+    }
 }
