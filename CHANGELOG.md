@@ -1,5 +1,19 @@
 # Change Log
 
+## v4.1.12-alpha
+- Separate out user action column from user status column
+- Improve table row menus in mobile views (#724)
+- Hide side menu toggle button in desktop sizes
+- Add chevron to user menu
+- Change "remember me" text
+- Improve table tool buttons
+- Twig extensions now implement `Twig_Extension_GlobalsInterface` as required by https://twig.symfony.com/doc/2.x/advanced.html#id1 (#788)
+- Display element based on permissions for group list/info pages 
+- Factor the admin user creation out of migrations and into its own Bakery command (See #778)
+- Bakery `clear-cache` command now clears Twig and router cache (Fix #750)
+- Add Russian translations
+- Add Travis for automated test/build on push
+
 ## v4.1.11-alpha
 - Updated `composer/installers` dependency.
 - Patch `composer.json` to fix `illuminate/*` dependencies at 5.4 for now

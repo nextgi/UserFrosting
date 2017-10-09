@@ -5,67 +5,102 @@
  * @link      https://github.com/userfrosting/UserFrosting
  * @license   https://github.com/userfrosting/UserFrosting/blob/master/licenses/UserFrosting.md (MIT License)
  */
-namespace UserFrosting\Sprinkle\Account\Database\Migrations\v400;
+namespace UserFrosting\Sprinkle\Account\Bakery;
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\Builder;
+use Illuminate\Database\Capsule\Manager as Capsule;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
+use UserFrosting\System\Bakery\BaseCommand;
+use UserFrosting\System\Bakery\DatabaseTest;
+use UserFrosting\System\Database\Model\Migrations;
 use UserFrosting\Sprinkle\Account\Database\Models\User;
 use UserFrosting\Sprinkle\Account\Database\Models\Role;
 use UserFrosting\Sprinkle\Account\Util\Password;
-use UserFrosting\System\Bakery\Migration;
 
 /**
- * CreateAdminUser migration
- * This migration handle the creation of the admin user. This is skipped if the user already exist
- * Version 4.0.0
+ * Create root user CLI command.
  *
- * See https://laravel.com/docs/5.4/migrations#tables
- * @extends Migration
  * @author Alex Weissman (https://alexanderweissman.com)
  */
-class CreateAdminUser extends Migration
+class CreateAdminUser extends BaseCommand
 {
+    use DatabaseTest;
+
     /**
-     * {@inheritDoc}
+     * @var string[] Migration dependencies for this command to work
      */
-    public $dependencies = [
+    protected $dependencies = [
         '\UserFrosting\Sprinkle\Account\Database\Migrations\v400\UsersTable',
         '\UserFrosting\Sprinkle\Account\Database\Migrations\v400\RolesTable',
         '\UserFrosting\Sprinkle\Account\Database\Migrations\v400\RoleUsersTable'
     ];
 
     /**
-     * Seed the master user into the User Table
+     * {@inheritDoc}
      */
-    public function seed()
+    protected function configure()
     {
-        $this->io->section("Root account setup");
+        $this->setName("create-admin")
+             ->setDescription("Create the initial admin (root) user account");
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->io->title("Root account setup");
+
+        // Need the database
+        try {
+            $this->io->writeln("<info>Testing database connection</info>", OutputInterface::VERBOSITY_VERBOSE);
+            $this->testDB();
+            $this->io->writeln("Ok", OutputInterface::VERBOSITY_VERBOSE);
+        } catch (\Exception $e) {
+            $this->io->error($e->getMessage());
+            exit(1);
+        }
+
+        // Need migration table
+        if (!Capsule::schema()->hasColumn('migrations', 'id')) {
+                $this->io->error("Migrations doesn't appear to have been run! Make sure the database is properly migrated by using the `php bakery migrate` command.");
+                exit(1);
+        }
+
+        // Make sure the required mirgations have been run
+        foreach ($this->dependencies as $migration) {
+            if (!Migrations::where('migration', $migration)->exists()) {
+                $this->io->error("Migration `$migration` doesn't appear to have been run! Make sure all migrations are up to date by using the `php bakery migrate` command.");
+                exit(1);
+            }
+        }
 
         // Make sure that there are no users currently in the user table
         // We setup the root account here so it can be done independent of the version check
         if (User::count() > 0) {
 
-            $this->io->warning("Table 'users' is not empty. Skipping root account setup. To set up the root account again, please truncate or drop the table and try again.");
+            $this->io->note("Table 'users' is not empty. Skipping root account setup. To set up the root account again, please truncate or drop the table and try again.");
 
         } else {
 
-            $this->io->writeln("To complete the installation process, you must set up a master (root) account.");
-            $this->io->writeln("Please answer the following questions to complete this process:\n");
+            $this->io->writeln("Please answer the following questions to create the root account:\n");
 
             // Get the account details
-            $user_name = $this->askUsername();
+            $userName = $this->askUsername();
             $email = $this->askEmail();
-            $first_name = $this->askFirstName();
-            $last_name = $this->askLastName();
+            $firstName = $this->askFirstName();
+            $lastName = $this->askLastName();
             $password = $this->askPassword();
 
             // Ok, now we've got the info and we can create the new user.
             $this->io->write("\n<info>Saving the root user details...</info>");
             $rootUser = new User([
-                "user_name" => $user_name,
+                "user_name" => $userName,
                 "email" => $email,
-                "first_name" => $first_name,
-                "last_name" => $last_name,
+                "first_name" => $firstName,
+                "last_name" => $lastName,
                 "password" => Password::hash($password)
             ]);
 
@@ -82,6 +117,8 @@ class CreateAdminUser extends Migration
                     $rootUser->roles()->attach($role->id);
                 }
             }
+
+            $this->io->success("Root user creation successful!");
         }
     }
 
@@ -93,23 +130,23 @@ class CreateAdminUser extends Migration
      */
     protected function askUsername()
     {
-        while (!isset($user_name) || !$this->validateUsername($user_name)) {
-            $user_name = $this->io->ask("Choose a username (1-50 characters, no leading or trailing whitespace)");
+        while (!isset($userName) || !$this->validateUsername($userName)) {
+            $userName = $this->io->ask("Choose a root username (1-50 characters, no leading or trailing whitespace)");
         }
-        return $user_name;
+        return $userName;
     }
 
     /**
      * Validate the username.
      *
      * @access protected
-     * @param mixed $user_name
+     * @param mixed $userName
      * @return void
      */
-    protected function validateUsername($user_name)
+    protected function validateUsername($userName)
     {
         // Validate length
-        if (strlen($user_name) < 1 || strlen($user_name) > 50) {
+        if (strlen($userName) < 1 || strlen($userName) > 50) {
             $this->io->error("Username must be between 1-50 characters");
             return false;
         }
@@ -120,7 +157,7 @@ class CreateAdminUser extends Migration
                 'regexp' => "/^\S((.*\S)|)$/"
             ]
         ];
-        $validate = filter_var($user_name, FILTER_VALIDATE_REGEXP, $options);
+        $validate = filter_var($userName, FILTER_VALIDATE_REGEXP, $options);
         if (!$validate) {
             $this->io->error("Username can't have any leading or trailing whitespace");
             return false;
@@ -152,7 +189,7 @@ class CreateAdminUser extends Migration
      */
     protected function validateEmail($email)
     {
-        // Validate lenght
+        // Validate length
         if (strlen($email) < 1 || strlen($email) > 254) {
             $this->io->error("Email must be between 1-254 characters");
             return false;
@@ -175,10 +212,10 @@ class CreateAdminUser extends Migration
      */
     protected function askFirstName()
     {
-        while (!isset($first_name) || !$this->validateFirstName($first_name)) {
-            $first_name = $this->io->ask("Enter the admin user first name (1-20 characters)");
+        while (!isset($firstName) || !$this->validateFirstName($firstName)) {
+            $firstName = $this->io->ask("Enter the user first name (1-20 characters)");
         }
-        return $first_name;
+        return $firstName;
     }
 
     /**
@@ -188,10 +225,10 @@ class CreateAdminUser extends Migration
      * @param mixed $name
      * @return void
      */
-    protected function validateFirstName($first_name)
+    protected function validateFirstName($firstName)
     {
-        // Validate lenght
-        if (strlen($first_name) < 1 || strlen($first_name) > 20) {
+        // Validate length
+        if (strlen($firstName) < 1 || strlen($firstName) > 20) {
             $this->io->error("First name must be between 1-20 characters");
             return false;
         }
@@ -207,23 +244,23 @@ class CreateAdminUser extends Migration
      */
     protected function askLastName()
     {
-        while (!isset($last_name) || !$this->validateLastName($last_name)) {
-            $last_name = $this->io->ask("Enter the admin user last name (1-30 characters)");
+        while (!isset($lastName) || !$this->validateLastName($lastName)) {
+            $lastName = $this->io->ask("Enter the user last name (1-30 characters)");
         }
-        return $last_name;
+        return $lastName;
     }
 
     /**
      * validateLastName function.
      *
      * @access protected
-     * @param mixed $last_name
+     * @param mixed $lastName
      * @return void
      */
-    protected function validateLastName($last_name)
+    protected function validateLastName($lastName)
     {
         // Validate length
-        if (strlen($last_name) < 1 || strlen($last_name) > 30) {
+        if (strlen($lastName) < 1 || strlen($lastName) > 30) {
             $this->io->error("Last name must be between 1-30 characters");
             return false;
         }

@@ -1,12 +1,13 @@
 # UserFrosting 4.1
 
-[https://www.userfrosting.com](https://www.userfrosting.com)
-
-If you simply want to show that you like this project, or want to remember it for later, you should **star**, not **fork**, this repository.  Forking is only for when you are ready to create your own copy of the code to work on.
-
+[![Build Status](https://travis-ci.org/userfrosting/UserFrosting.svg?branch=master)](https://travis-ci.org/userfrosting/UserFrosting)
 [![Join the chat at https://chat.userfrosting.com/channel/support](https://demo.rocket.chat/images/join-chat.svg)](https://chat.userfrosting.com/channel/support)
 
 [![Click here to lend your support to: UserFrosting: A secure, modern user management system for PHP and make a donation at pledgie.com !](https://pledgie.com/campaigns/29583.png?skin_name=chrome)](https://pledgie.com/campaigns/29583)
+
+[https://www.userfrosting.com](https://www.userfrosting.com)
+
+If you simply want to show that you like this project, or want to remember it for later, you should **star**, not **fork**, this repository.  Forking is only for when you are ready to create your own copy of the code to work on.
 
 ## By [Alex Weissman](https://alexanderweissman.com)
 
@@ -33,7 +34,7 @@ Please see our [installation guide](https://learn.userfrosting.com/installation)
 
 ## Troubleshooting
 
-If you are having trouble installing UserFrosting, please [join us in chat](https://chat.userfrosting.com).
+If you are having trouble installing UserFrosting, please [join us in chat](https://chat.userfrosting.com) or try our [forums](https://forums.userfrosting.com).
 
 If you are generally confused about the structure and layout of the code, or it doesn't look like the kind of PHP code that you're used to, please [start from the beginning](https://learn.userfrosting.com/background).  
 
@@ -74,13 +75,17 @@ Louis's a civil engineer in Montréal, Québec who also has a passion for coding
 
 Jordan's a developer at Mayvin Training and a student studying Computer Science at the University of Wollongong. His passion is creating software-based solutions to overcomplicated problems, without taking control away from the user. He's also Australian.
 
+### Sarah Baghdadi
+
+Sarah is UserFrosting's UX specialist and frontend designer.  In addition to her work on the UF application itself, she is responsible for the amazing design of https://www.userfrosting.com and https://learn.userfrosting.com.
+
 ### Mike Jacobs
 
-Mike's a programmer and IT specialist for a small business in New Hampshire, and works on open source projects when he's not camping or traveling.    
+Mike's a programmer and IT specialist for a small business in New Hampshire, and works on open source projects when he's not camping or traveling.
 
 ### Srinivas Nukala
 
-Srinivas's a web applications architect, with a passion for open source technologies. He is experienced in building SaaS (software as a service) web applications and enjoys working on open source projects and contributing to the community. He has a Masters in Computer Science from Pune University, India.    
+Srinivas's a web applications architect, with a passion for open source technologies. He is experienced in building SaaS (software as a service) web applications and enjoys working on open source projects and contributing to the community. He has a Masters in Computer Science from Pune University, India.
 
 ## Thanks to our translators!
 
@@ -94,7 +99,8 @@ Srinivas's a web applications architect, with a passion for open source technolo
 - @rafa31gz - Spanish
 - @splitt3r - German
 - @X-Anonymous-Y - German
+- Dmitriy (@rendername) - Russian
 
 ## Contributing
 
-Please see our [contributing guidelines](CONTRIBUTING.md) as well as our [style guidelines](STYLE-GUIDE.md).
+Please see our [contributing guidelines](.github/CONTRIBUTING.md) as well as our [style guidelines](STYLE-GUIDE.md).

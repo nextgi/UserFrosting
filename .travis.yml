@@ -1,0 +1,23 @@
+sudo: false
+
+language: php
+
+dist: trusty
+
+php:
+  - 5.6
+  - 7.0
+  - 7.1
+  - hhvm
+
+services:
+  - mysql
+
+env: UF_MODE=testing DB_DRIVER=mysql DB_HOST=127.0.0.1 DB_PORT=3306 DB_NAME=userfrosting DB_USER=travis DB_PASSWORD=
+
+before_install:
+  - mysql -e 'CREATE DATABASE userfrosting;'
+
+before_script: cp app/sprinkles.example.json app/sprinkles.json; composer install; php bakery migrate
+
+script: app/vendor/bin/phpunit
