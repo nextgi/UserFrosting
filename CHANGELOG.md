@@ -1,5 +1,12 @@
 # Change Log
 
+## v4.1.13-alpha
+- `ufTable`: Implement `rowTemplate` for customizing how rows are rendered (#787)
+- `ufTable`: Support for passing callbacks for column templates instead of Handlebars templates
+- Remove explicit references to `id` columns (#803)
+- Fix Docker
+- Append full name to User API
+
 ## v4.1.12-alpha
 - Separate out user action column from user status column
 - Improve table row menus in mobile views (#724)
