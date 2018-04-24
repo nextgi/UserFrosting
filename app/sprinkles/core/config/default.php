@@ -38,7 +38,7 @@
                 'port' => 11211,
                 'weight' => 100
             ],
-            "redis" => [
+            'redis' => [
                 'host' => '127.0.0.1',
                 'password' => null,
                 'port' => 6379,
@@ -146,8 +146,10 @@
                     'ru_RU' => 'русский',
                     'de_DE' => 'Deutsch',
                     'fr_FR' => 'Français',
+                    'tr'    => 'Türk',
                     'it_IT' => 'Italiano',
-                    'th_TH' => 'ภาษาไทย'
+                    'th_TH' => 'ภาษาไทย',
+                    'fa'    => 'فارسی'
                 ],
                 // This can be a comma-separated list, to load multiple fallback locales
                 'default' => 'en_US'

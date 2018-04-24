@@ -11,7 +11,6 @@ use Birke\Rememberme\Authenticator as RememberMe;
 use Birke\Rememberme\Storage\PDOStorage as RememberMePDO;
 use Birke\Rememberme\Triplet as RememberMeTriplet;
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Interop\Container\ContainerInterface;
 use UserFrosting\Session\Session;
 use UserFrosting\Sprinkle\Account\Authenticate\Exception\AccountDisabledException;
 use UserFrosting\Sprinkle\Account\Authenticate\Exception\AccountInvalidException;
@@ -20,7 +19,7 @@ use UserFrosting\Sprinkle\Account\Authenticate\Exception\AuthCompromisedExceptio
 use UserFrosting\Sprinkle\Account\Authenticate\Exception\AuthExpiredException;
 use UserFrosting\Sprinkle\Account\Authenticate\Exception\InvalidCredentialsException;
 use UserFrosting\Sprinkle\Account\Database\Models\User;
-use UserFrosting\Sprinkle\Account\Util\Password;
+use UserFrosting\Sprinkle\Account\Facades\Password;
 use UserFrosting\Sprinkle\Core\Util\ClassMapper;
 
 /**
@@ -84,6 +83,7 @@ class Authenticator
      * @param ClassMapper $classMapper Maps generic class identifiers to specific class names.
      * @param Session $session The session wrapper object that will store the user's id.
      * @param Config $config Config object that contains authentication settings.
+     * @param mixed $cache Cache service instance
      */
     public function __construct(ClassMapper $classMapper, Session $session, $config, $cache)
     {
@@ -143,8 +143,8 @@ class Authenticator
             throw new AccountDisabledException();
         }
 
-        // Check that the user's account is activated
-        if ($user->flag_verified == 0) {
+        // Check that the user's account is verified (if verification is required)
+        if ($this->config['site.registration.require_email_verification'] && $user->flag_verified == 0) {
             throw new AccountNotVerifiedException();
         }
 
@@ -193,7 +193,7 @@ class Authenticator
         $this->session->regenerateId(true);
 
         // Since regenerateId deletes the old session, we'll do the same in cache
-        $this->cache->tags([$this->config['cache.prefix'], '_s' . $oldId])->flush();
+        $this->flushSessionCache($oldId);
 
         // If the user wants to be remembered, create Rememberme cookie
         if ($rememberMe) {
@@ -251,7 +251,7 @@ class Authenticator
         $this->session->destroy();
 
         // Since regenerateId deletes the old session, we'll do the same in cache
-        $this->cache->tags([$this->config['cache.prefix'], '_s' . $oldId])->flush();
+        $this->flushSessionCache($oldId);
 
         // Restart the session service
         $this->session->start();
@@ -316,7 +316,7 @@ class Authenticator
      */
     protected function loginRememberedUser()
     {
-        /** @var Birke\Rememberme\LoginResult $loginResult */
+        /** @var \Birke\Rememberme\LoginResult $loginResult */
         $loginResult = $this->rememberMe->login();
 
         if ($loginResult->isSuccess()) {
@@ -404,5 +404,16 @@ class Authenticator
         } else {
             return null;
         }
+    }
+
+    /**
+     *    Flush the cache associated with a session id
+     *
+     *    @param  string $id The session id
+     *    @return bool
+     */
+    public function flushSessionCache($id)
+    {
+        return $this->cache->tags('_s' . $id)->flush();
     }
 }
