@@ -5,8 +5,268 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.3.3]
+
+### Fixed
+- Fixed wrong version number in define
+- Locked Slim version to 3.12.2 until UF 4.4 can fix `container-interop/container-interop` replacement with `psr/container`
+
+## [v4.3.2]
+
+### Added
+- Add translation for Brazilian Portuguese (locale pt_BR) - Thanks @maxwellkenned ! ([#1036])
+- Add translation for Serbian (sr_RS) - Thanks @zbigcheese ! ([#1035])
+
+### Changed
+- Updates to the French Locales ([#1027])
+- Updates to the German Locales ([#1039])
+- Updates to the Thai Locales ([#1041])
+- Updates to the Greek Locales ([#1042])
+- Updates to the Persian Locales ([#1045])
+
+### Fixed
+- Fix issue with hidden fields in group modal ([#1033])
+- User cache not flushed on model save ([#1050])
+- Fix "the passwords don't match" error when editing a user password ([#1034], [#1038])
+
+### Deprecated
+`UserController:updateField` now expect the new value as `$_PUT[$fieldName]` (where `$fieldName` is the name of the field you want to update, eg. `$_PUT['password']` for editing `password`) instead of `$_PUT['value']`. This will only affect your code if you're **not** using the [user widjet](https://github.com/userfrosting/UserFrosting/blob/master/app/sprinkles/admin/assets/userfrosting/js/widgets/users.js).
+
+## [v4.3.1]
+
+### Changed
+- Update Arabic Locales ([#1028])
+
+### Fixed
+- Fix typos in user creation with initial password ([#1030])
+
+## [v4.3.0]
+
+### Changed Requirements
+- Changed minimum PHP Version to 7.1
+
+### Changed Composer Dependencies
+- Updated Laravel Illuminate packages to 5.8
+- Updated Twig to 2.11
+- Updated PHPUnit to 7.5
+- Updated Mockery to 1.2
+- Updated nikic/php-parser to 4.2.2
+- Updated PHPMailer/PHPMailer to 6.0.7
+- Updated league/csv to 9.2.1
+- Updated symfony/console to 4.3
+- Updated vlucas/phpdotenv to 3.4.0
+
+### Changed Frontend Dependencies
+- Updated handlebar from 3.0.x to 4.1.2
+- Updated AdminLTE theme to 2.4.15 ([#994]; [#1014]; [#1015])
+- Updated Font Awesome to 5.9 ([#957]; [#870])
+
+### Added
+- Separated `BakeCommand` class into multiple methods to make it easier for sprinkle to add custom command to the `bake` command.
+- Allow null group assignment for users ([#867]; [#964])
+- Password can now be set manually when creating new user ([#1017]; [#763])
+- Icon picker for user and group form ([#713]; [#1019])
+
+### Fix
+- `bake` command return error if account sprinkle is not included ([#944])
+- Email is case-sensitive ([#881]; [#1012])
+- Update vulnerable handlebars@^3.0.3 to ^4.0.12 ([#921])
+- Moved `handlebars-helpers.js` from `core` to `admin` sprinkle ([#897])
+- Remove `Package guzzle/guzzle is abandoned, you should avoid using it. Use guzzlehttp/guzzle instead` message ([#1016])
+
+### Changed
+- Account sprinkle now extend the Core `BakeCommand` class to add the `create-admin` to the general bake command. Any sprinkle already extending the Core `BakeCommand` might need adjustments.
+- Updated custom Eloquent relations (`belongsToManyThrough`, `morphToManyUnique`, `belongsToManyUnique`, `morphToManyUnique`, etc.) to support Laravel 5.8. See [The `belongsToMany` Method](https://laravel.com/docs/5.5/upgrade#upgrade-5.5.0).
+
+### Removed
+- Removed `belongsToManyConstrained` (deprecated in 4.1.6)
+- Remove `league/flysystem-aws-s3-v3` and `league/flysystem-rackspace` as core dependencies ([#1018])
+
+## [v4.2.3]
+
+### Added
+- Config to set Domain of RememberMe Cookie ([#990], [#991]; Thanks @xrobau !)
+- Config settings for password min/max length ([#993])
+- `migrate:clean` bakery command ([#1007])
+
+### Fixed
+- [PHPMailer] Turn off opportunistic TLS when disabled ([#986], [#987])
+- Migrator now ignore files that don't end in `.php` ([#965], [#998])
+- Respects CSRF_ENABLED environment variable ([#976]; Thanks @Poldovico !)
+- Checkbox bug on password change form ([#1008])
+- On role page, users table action buttons not working ([#1010])
+
+## [v4.2.2]
+
+### Added
+- New group factory (`'UserFrosting\Sprinkle\Account\Database\Models\Group'`)
+- New `withController` Trait, as an alternative for deprecated `ControllerTestCase`
+- StyleCI config
+- [Travis] SQLite in-memory DB testing
+- [Travis] enabled memcache & Redis service
+
+### Fixed
+- DefaultPermissions seed results in SQL errors ([#981]; [#983])
+- Make group & role schema consistent between creation and edition. Prevents group and role without a name or slug to be created during edition.
+- Factories changed to make sure slugs are unique
+- Fix `WithTestUser` Trait returning a user with id of zero or reserve master id when a non-master user was asked. If master user already exist, will return it instead of trying to create a new one (with the same id)
+- Force close db connection on test `tearDown` procedure
+
+### Changed
+- Recommended PHP version is now 7.2, as 7.1 will be EOL in less than 6 months
+- Added tests coverage for all build-in controllers
+- Applied styling rules from StyleCI & updated php-cs-fixer rules to match StyleCI config
+
+### Deprecated
+- `ControllerTestCase`. Use `withController` Trait instead.
+
+
+## [v4.2.1]
+
+### Added
+- `UserFrosting\Sprinkle\Core\Database\Models\Session` model for the `sessions` db table.
+- `TEST_SESSION_HANDLER` environment variable to set the session save handler to use for Testing.
+- `withDatabaseSessionHandler` Trait for testing. Use `$this->useDatabaseSessionHandler()` to use database session handler in tests.
+
+### Fixed
+- Italian translation ([#950])
+- User Registration failing when trying to register two accounts with the same email address ([#953])
+- Bad test case for `CoreController::getAsset`.
+- User Model `forceDelete` doesn't remove the record from the DB ([#951])
+- Fix PHP Fatal error that can be thrown when registering a new User
+- Session not working with database handler ([#952])
+- Remove any persistences when forceDeleting user to prevent Foreign Key Constraints issue ([#963])
+- More helpful error message in checkEnvironment.php (Thanks @amosfolz; [#958])
+- Hide locale select from UI if only one locale is available (Thanks @avsdev-cw; [#968])
+- Download CSV filename error ([#893])
+
+## [v4.2.0]
+### Changed Requirements
+- Changed minimum Node.js version to **v10.12.0**
+- Changed minimum NPM version to **6.0.0**
+
+### Added
+- Use locale requested by browser when possible for guests ([#718])
+- Add locale drop down to registration page, with the currently applied locale selected ([#718])
+- Added new `filesystem` service ([#869])
+- Greek locale (Thanks @lenasterg!; [#940])
+- Add cache facade (Ref [#838])
+- Added new `Seeder`
+- `NoCache` middleware to prevent caching of routes with dynamic content
+- Bakery :
+    - Added `sprinkle:list` Bakery Command
+    - Added `migrate:status` Bakery Command
+    - Added `test:mail` Bakery Command
+    - Added `seed` Bakery command
+    - New `isProduction` method for Bakery command to test if app is in production mode
+    - Added `database` option for `migrate` and `migrate:*` Bakery commands
+    - Added arguments to the `create-admin` and `setup` Bakery commands so it can be used in a non-interactive way ([#808])
+    - Extended `bakery test` to add Test Scope and sprinkle selection argument ([#919], Thanks @ssnukala !)
+- Testing :
+    - Added `RefreshDatabase` test Trait to use a fresh database for a test
+    - Added `TestDatabase` test Trait to use the in memory database for a test
+    - Added tests for migrator and it's components
+    - Added tests for `migrate` Bakery command and sub-commands
+    - Added `withTestUser` trait for helper methods when running tests requiring a user
+    - Added `ControllerTestCase` special test case to help testing controllers
+    - Improved overall test coverage and added coverage config to `phpunit.xml`
+- Assets :
+    - Added support for npm dependencies on the frontend with auditting for known vulnerabilities
+- Database :
+    - Implement `withRaw`, `withSum`, `withAvg`, `withMin`, `withMax` (see https://github.com/laravel/framework/pull/16815)
+- Vagrant / Docker :
+    - Include Vagrant integration directly inside UF ([#829])
+    - Sample test environment for Docker
+- Misc :
+    - Integrated improvements from [v4.0.25-Alpha](#v4025-alpha)
+    - Added code style config (`.php_cs`) and instructions for PHP-CS-Fixer in Readme
+    - Add support for other config['mailer'] options ([#872]; Thanks @apple314159 !)
+
+### Changed
+- Move User registration out of the `AccountController` ([#793])
+- Rewritten the `locator` service so it's better suited for sprinkle system ([#853])
+- Bakery :
+    - Moved Bakery commands from `app/System/Bakery` to the `Core` sprinkle and `UserFrosting\Sprinkle\Core\Bakery` namespace.
+    - Improved `route:list` Bakery command from [v4.1.20](#v4.1.20)
+    - Sprinkle list in the bakery `debug` command to uses the new `sprinkle:list` table
+- Migrations & Database :
+    - `migrate` and `migrate:*` Bakery command now require confirmation before execution when in production mode.
+    - Re-written the migrator. It is now detached from the console and Bakery and is now included in the Core Sprinkle ServicesProvider ([#795])
+    - Makes the `semantic versioning` part of a migration class optional. Migrations classes can now have the `UserFrosting\Sprinkle\{sprinkleName}\Database\Migrations` namespace, or any other sub-namespace
+    - Uncomment foreign keys in core migrations ([#833])
+    - Move default groups, roles & permissions creation to seeds
+- Assets
+    - Rewrote asset processing to minimise file sizes, drastically reduce IO, and improve maintainability
+    - Rewrote frontend dependency installation to prevent duplication and detect incompatibilities
+    - Rewrite `AssetLoader` to act as a wrapper for `Assets`
+- Misc :
+    - Updated Docker integration
+    - Moved some constants from `app/defines.php` to `app/sprinkles/core/defines.php`
+    - Move route initialization from system to core sprinkle as router service is located in the core sprinkle
+    - `dev` environment changed to `debug`  ([#653])
+    - Changed deprecations to `warning`, and suppressed them in tests
+    - `routerCacheFile` config now only contains filename. Locator is used to find the full path
+
+### Fixed
+- Sprinkle without a `template/` folder won't cause error anymore
+- Fixed routes not available in Tests and Bakery ([#854])
+- redirect failing in UserController::pageInfo when user not found ([#888])
+- Fix WhoopsRenderer integration, resolving a temp fix in [v4.1.21](#v4.1.21).
+- Fix Travis not running tests with the env database
+- Ignore existing `package-lock.json` which caused incorrect dependencies to be installed when upgrading from older versions of UserFrosting.
+- Testing :
+    - Added `coverage-format` and `coverage-path` options to `test` Bakery command
+    - Sprinkle Testscope is now case insensitive
+    - **Class testscope now relative to `/` instead of `/UserFrosting/Sprinkle/` for more intuitive usage and to enable testing of non sprinkle tests**
+    - Detect and use the sprinkle `phpunit.xml` config when testing a specific sprinkle
+- SprinkleManager Improvements :
+    - Added public `getSprinklePath` method to get path to the sprinkle directory
+    - Added public `getSprinkleClassNamespace` method to get sprinkle base namespace
+    - Added public `getSprinkle` method. Returns the sprinkle name as formatted in `sprinkles.json` file, independent of the case of the search argument.
+    - Public `isAvailable` method now case insensitive.
+    - Added public `getSprinklesPath` & `setSprinklesPath` to return or set the path to the sprinkle dir (`app/sprinkles/`)
+    - Added `JsonException` if `sprinkles.json` doesn't contain valid json.
+    - Added specific tests for sprinkleManager with 100% test coverage
+
+### Deprecated
+- Migrations should now extends `UserFrosting\Sprinkle\Core\Database\Migration` instead of `UserFrosting\System\Bakery\Migration`
+- Migrations dependencies property should now be a static property
+- Deprecated migration `seed` method. Database seeding should now be done using the new Seeder
+- Trait `\UserFrosting\Tests\DatabaseTransactions` has been deprecated. Tests should now use the `\UserFrosting\Sprinkle\Core\Tests\DatabaseTransactions` trait instead. ([#826])
+
+### Removed
+- The console IO instance is not available anymore in migrations. Removed the `io` property from migration classes
+- Removed Bakery `projectRoot` property. Use the `\UserFrosting\ROOT_DIR` constant instead
+- Removed `pretend` option from Bakery `migrate:refresh` and `migrate:reset` commands
+- Removed `UserFrosting\System\Bakery\DatabaseTest` trait, use `UserFrosting\Sprinkle\Core\Bakery\Helper\DatabaseTest` instead.
+- Removed `UserFrosting\System\Bakery\ConfirmableTrait` trait, use `UserFrosting\Sprinkle\Core\Bakery\Helper\ConfirmableTrait` instead.
+
+
+## v4.1.22
+- Updated Docker `README.md`.
+- Replaced `libpng12-dev` which has been dropped since Ubuntu 16.04 with `libpng-dev` in PHP `Dockerfile`.
+- Avoid twig deprecation warning ([#911](https://github.com/userfrosting/UserFrosting/pull/911); Thanks @silvioq !)
+
+## v4.1.21
+- Locked Whoops to version 2.2.1 until they fix that [`[internal]` issue](https://github.com/filp/whoops/issues/598).
+
+## v4.1.20
+- Added `route:list` command to list all registered routes ([#903](https://github.com/userfrosting/UserFrosting/pull/903); Thanks @apple314159 !)
+- Added warning in configuration file regarding disabling registration and email verification ([#900](https://github.com/userfrosting/UserFrosting/pull/900); Thanks @linkhousemedia !)
+
+## v4.1.19
+- Prevent setup to run again if already configured when using `bake`
+- Fix `Unique::getPaginatedQuery` to call to `addSelect` instead of `select` during the pre-paginated query
+- Updated Spanish Translation (Thanks @silvioq !)
+- Fix error template in WhoopsRenderer (#885; Thanks @silvioq !)
+
+## v4.1.18
+- Bakery setup wizard for SMTP config + separate SMTP setup in it's own command (https://github.com/userfrosting/UserFrosting/issues/874)
+- Update Italian translations (https://github.com/userfrosting/UserFrosting/pull/875)
+- Return deleted `row` in `ufCollection` event (https://github.com/userfrosting/UserFrosting/pull/873)
+
 ## v4.1.17-alpha
-- Lock `gulp-uf-bundle-assets` at v2.28.0 until Silic0nS0ldier/gulp-uf-bundle-assets#5 is resolved (see #859)
+- Lock `gulp-uf-bundle-assets` at v2.28.0 until userfrosting/gulp-uf-bundle-assets#5 is resolved (see #859)
 - Add missing getInfo methods for GroupController and RoleController (#837)
 
 ## v4.1.16-alpha
@@ -179,6 +439,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Use YAML as default format for request schema (#690)
 
 See [http://learn.userfrosting.com/upgrading/40-to-41](Upgrading 4.0.x to 4.1.x documentation) for complete list of changes and breaking changes.
+
+## v4.0.25-Alpha
+- Support npm for frontend vendor assets, and deprecation of bower (#737)
+- Duplicate frontend vendor assets are no longer downloaded (#727)
+- Detect incompatibilites between frontend vendor assets (related to #727)
+- Improved reliability of generated base URL, especially when using docker
+- Fixed syntax error in Portugese translations
+- Minimise verbosity of assets build scripts when not in 'dev' mode
+- Fix to stop bower complaining about sudo when using docker
+- The `assetLoader` service has been deprecated, and may be removed in the future.
+- **Potential breaking change:** Some packages like `Handlebars` are organised differently at npm. If referencing vendor assets introduced by UF, make sure they are still correct.
 
 ## v4.0.24-alpha
 - Fixes to nginx config file, and add location block for LE acme challenge
@@ -551,3 +822,80 @@ See [http://learn.userfrosting.com/upgrading/40-to-41](Upgrading 4.0.x to 4.1.x 
 - Added 404 error page
 - Standardized JSON interface for backend scripts
 - Front-end should now be able to catch virtually any backend error and take an appropriate action (instead of white screen of death)
+
+[#653]: https://github.com/userfrosting/UserFrosting/issues/653
+[#713]: https://github.com/userfrosting/UserFrosting/issues/713
+[#718]: https://github.com/userfrosting/UserFrosting/issues/718
+[#763]: https://github.com/userfrosting/UserFrosting/issues/763
+[#793]: https://github.com/userfrosting/UserFrosting/issues/793
+[#795]: https://github.com/userfrosting/UserFrosting/issues/795
+[#808]: https://github.com/userfrosting/UserFrosting/issues/808
+[#826]: https://github.com/userfrosting/UserFrosting/issues/826
+[#829]: https://github.com/userfrosting/UserFrosting/issues/829
+[#833]: https://github.com/userfrosting/UserFrosting/issues/833
+[#838]: https://github.com/userfrosting/UserFrosting/issues/838
+[#853]: https://github.com/userfrosting/UserFrosting/issues/853
+[#854]: https://github.com/userfrosting/UserFrosting/issues/854
+[#867]: https://github.com/userfrosting/UserFrosting/issues/867
+[#869]: https://github.com/userfrosting/UserFrosting/issues/869
+[#870]: https://github.com/userfrosting/UserFrosting/issues/870
+[#872]: https://github.com/userfrosting/UserFrosting/issues/872
+[#881]: https://github.com/userfrosting/UserFrosting/issues/881
+[#888]: https://github.com/userfrosting/UserFrosting/issues/888
+[#893]: https://github.com/userfrosting/UserFrosting/issues/893
+[#897]: https://github.com/userfrosting/UserFrosting/issues/897
+[#919]: https://github.com/userfrosting/UserFrosting/issues/919
+[#921]: https://github.com/userfrosting/UserFrosting/issues/921
+[#940]: https://github.com/userfrosting/UserFrosting/issues/940
+[#950]: https://github.com/userfrosting/UserFrosting/issues/950
+[#951]: https://github.com/userfrosting/UserFrosting/issues/951
+[#952]: https://github.com/userfrosting/UserFrosting/issues/952
+[#953]: https://github.com/userfrosting/UserFrosting/issues/953
+[#957]: https://github.com/userfrosting/UserFrosting/issues/957
+[#958]: https://github.com/userfrosting/UserFrosting/issues/958
+[#963]: https://github.com/userfrosting/UserFrosting/issues/963
+[#964]: https://github.com/userfrosting/UserFrosting/issues/964
+[#965]: https://github.com/userfrosting/UserFrosting/issues/965
+[#968]: https://github.com/userfrosting/UserFrosting/issues/968
+[#976]: https://github.com/userfrosting/UserFrosting/issues/976
+[#981]: https://github.com/userfrosting/UserFrosting/issues/981
+[#983]: https://github.com/userfrosting/UserFrosting/issues/983
+[#986]: https://github.com/userfrosting/UserFrosting/issues/986
+[#987]: https://github.com/userfrosting/UserFrosting/issues/987
+[#990]: https://github.com/userfrosting/UserFrosting/issues/990
+[#991]: https://github.com/userfrosting/UserFrosting/issues/991
+[#993]: https://github.com/userfrosting/UserFrosting/issues/993
+[#994]: https://github.com/userfrosting/UserFrosting/issues/994
+[#998]: https://github.com/userfrosting/UserFrosting/issues/998
+[#1007]: https://github.com/userfrosting/UserFrosting/issues/1007
+[#1008]: https://github.com/userfrosting/UserFrosting/issues/1008
+[#1010]: https://github.com/userfrosting/UserFrosting/issues/1010
+[#1012]: https://github.com/userfrosting/UserFrosting/issues/1012
+[#1014]: https://github.com/userfrosting/UserFrosting/issues/1014
+[#1015]: https://github.com/userfrosting/UserFrosting/issues/1015
+[#1016]: https://github.com/userfrosting/UserFrosting/issues/1016
+[#1017]: https://github.com/userfrosting/UserFrosting/issues/1017
+[#1018]: https://github.com/userfrosting/UserFrosting/issues/1018
+[#1019]: https://github.com/userfrosting/UserFrosting/issues/1019
+[#1027]: https://github.com/userfrosting/UserFrosting/issues/1027
+[#1028]: https://github.com/userfrosting/UserFrosting/issues/1028
+[#1030]: https://github.com/userfrosting/UserFrosting/issues/1030
+[#1033]: https://github.com/userfrosting/UserFrosting/issues/1033
+[#1034]: https://github.com/userfrosting/UserFrosting/issues/1034
+[#1035]: https://github.com/userfrosting/UserFrosting/issues/1035
+[#1036]: https://github.com/userfrosting/UserFrosting/issues/1036
+[#1038]: https://github.com/userfrosting/UserFrosting/issues/1038
+[#1039]: https://github.com/userfrosting/UserFrosting/issues/1039
+[#1041]: https://github.com/userfrosting/UserFrosting/issues/1041
+[#1042]: https://github.com/userfrosting/UserFrosting/issues/1042
+[#1045]: https://github.com/userfrosting/UserFrosting/issues/1045
+[#1050]: https://github.com/userfrosting/UserFrosting/issues/1050
+
+[v4.2.0]: https://github.com/userfrosting/UserFrosting/compare/v4.1.22...v4.2.0
+[v4.2.1]: https://github.com/userfrosting/UserFrosting/compare/v4.2.0...v.4.2.1
+[v4.2.2]: https://github.com/userfrosting/UserFrosting/compare/v.4.2.1...v4.2.2
+[v4.2.3]: https://github.com/userfrosting/UserFrosting/compare/v4.2.2...v4.2.3
+[v4.3.0]: https://github.com/userfrosting/UserFrosting/compare/v4.2.3...v4.3.0
+[v4.3.1]: https://github.com/userfrosting/UserFrosting/compare/v4.3.0...v4.3.1
+[v4.3.2]: https://github.com/userfrosting/UserFrosting/compare/v4.3.1...v4.3.2
+[v4.3.3]: https://github.com/userfrosting/UserFrosting/compare/v4.3.2...v4.3.3

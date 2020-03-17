@@ -16,8 +16,8 @@
        <table id="table-users" class="tablesorter table table-bordered table-hover table-striped" data-sortlist="[[0, 0]]">
            <thead>
                <tr>
-                   <th class="sorter-metatext" data-column-name="name" data-column-template="#user-table-column-info">User <i class="fa fa-sort"></i></th>
-                   <th class="sorter-metanum" data-column-name="last_activity" data-column-template="#user-table-column-last-activity">Last Activity <i class="fa fa-sort"></i></th>
+                   <th class="sorter-metatext" data-column-name="name" data-column-template="#user-table-column-info">User <i class="fas fa-sort"></i></th>
+                   <th class="sorter-metanum" data-column-name="last_activity" data-column-template="#user-table-column-last-activity">Last Activity <i class="fas fa-sort"></i></th>
                </tr>
            </thead>
            <tbody>
@@ -30,7 +30,7 @@
                    <a href="{{site.uri.public}}/users/u/{{row.user_name}}">{{row.first_name}} {{row.last_name}} ({{row.user_name}})</a>
                </strong>
                <div>
-                   <i class="fa fa-envelope"></i> <a href="mailto:{{row.email}}">{{row.email}}</a>
+                   <i class="fas fa-envelope"></i> <a href="mailto:{{row.email}}">{{row.email}}</a>
                </div>
            </td>
        </script>
@@ -50,11 +50,11 @@
        </script>
 
        <div class="pager pager-lg tablesorter-pager js-uf-table-pager">
-           <span class="pager-control first" title="First page"><i class="fa fa-angle-double-left"></i></span>
-           <span class="pager-control prev" title="Previous page"><i class="fa fa-angle-left"></i></span>
+           <span class="pager-control first" title="First page"><i class="fas fa-angle-double-left"></i></span>
+           <span class="pager-control prev" title="Previous page"><i class="fas fa-angle-left"></i></span>
            <span class="pagedisplay"></span>
-           <span class="pager-control next" title="Next page"><i class="fa fa-angle-right"></i></span>
-           <span class="pager-control last" title= "Last page"><i class="fa fa-angle-double-right"></i></span>
+           <span class="pager-control next" title="Next page"><i class="fas fa-angle-right"></i></span>
+           <span class="pager-control last" title= "Last page"><i class="fas fa-angle-double-right"></i></span>
            <br><br>
            Jump to Page: <select class="gotoPage"></select> &bull; Show:
            <select class="pagesize">
@@ -85,6 +85,7 @@
  * == METHODS ==
  *
  * `getTableStateVars( table )`: fetches the current page size, page number, sort order, sort field, and column filters.
+ * `refresh`: reload the table data
  *
  * UserFrosting https://www.userfrosting.com
  * @author Alexander Weissman <https://alexanderweissman.com>
@@ -415,6 +416,13 @@
     };
 
     /**
+     * Refresh the table
+     */
+    Plugin.prototype.refresh = function() {
+        this.ts.trigger('pagerUpdate');
+    };
+
+    /**
      * Generate the AJAX url.
      * Used as the default callback for pager_customAjaxUrl
      * @private
@@ -433,6 +441,7 @@
 
         return url;
     };
+
     /**
      * Process data returned from the AJAX request and rendering the table cells.
      * Used as the default callback for pager_ajaxProcessing

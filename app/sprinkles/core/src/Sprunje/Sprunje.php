@@ -1,23 +1,24 @@
 <?php
-/**
+
+/*
  * UserFrosting (http://www.userfrosting.com)
  *
  * @link      https://github.com/userfrosting/UserFrosting
- * @license   https://github.com/userfrosting/UserFrosting/blob/master/licenses/UserFrosting.md (MIT License)
+ * @copyright Copyright (c) 2019 Alexander Weissman
+ * @license   https://github.com/userfrosting/UserFrosting/blob/master/LICENSE.md (MIT License)
  */
+
 namespace UserFrosting\Sprinkle\Core\Sprunje;
 
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use League\Csv\Writer;
 use Psr\Http\Message\ResponseInterface as Response;
-use UserFrosting\Sprinkle\Core\Facades\Debug;
 use UserFrosting\Sprinkle\Core\Util\ClassMapper;
 use UserFrosting\Support\Exception\BadRequestException;
 use Valitron\Validator;
 
 /**
- * Sprunje
+ * Sprunje.
  *
  * Implements a versatile API for sorting, filtering, and paginating an Eloquent query builder.
  *
@@ -26,7 +27,7 @@ use Valitron\Validator;
 abstract class Sprunje
 {
     /**
-     * @var UserFrosting\Sprinkle\Core\Util\ClassMapper
+     * @var ClassMapper
      */
     protected $classMapper;
 
@@ -45,17 +46,17 @@ abstract class Sprunje
     protected $query;
 
     /**
-     * Default HTTP request parameters
+     * Default HTTP request parameters.
      *
      * @var array[string]
      */
     protected $options = [
-        'sorts' => [],
+        'sorts'   => [],
         'filters' => [],
-        'lists' => [],
-        'size' => 'all',
-        'page' => null,
-        'format' => 'json'
+        'lists'   => [],
+        'size'    => 'all',
+        'page'    => null,
+        'format'  => 'json',
     ];
 
     /**
@@ -125,7 +126,7 @@ abstract class Sprunje
      * Constructor.
      *
      * @param ClassMapper $classMapper
-     * @param mixed[] $options
+     * @param mixed[]     $options
      */
     public function __construct(ClassMapper $classMapper, array $options)
     {
@@ -140,13 +141,14 @@ abstract class Sprunje
         $v->rule('regex', 'format', '/json|csv/i');
 
         // TODO: translated rules
-        if(!$v->validate()) {
+        if (!$v->validate()) {
             $e = new BadRequestException();
             foreach ($v->errors() as $idx => $field) {
-                foreach($field as $eidx => $error) {
+                foreach ($field as $eidx => $error) {
                     $e->addUserMessage($error);
                 }
             }
+
             throw $e;
         }
 
@@ -164,19 +166,22 @@ abstract class Sprunje
      * Extend the query by providing a callback.
      *
      * @param callable $callback A callback which accepts and returns a Builder instance.
-     * @return $this
+     *
+     * @return self
      */
     public function extendQuery(callable $callback)
     {
         $this->query = $callback($this->query);
+
         return $this;
     }
 
     /**
      * Execute the query and build the results, and append them in the appropriate format to the response.
      *
-     * @param ResponseInterface $response
-     * @return ResponseInterface
+     * @param Response $response
+     *
+     * @return Response
      */
     public function toResponse(Response $response)
     {
@@ -186,14 +191,14 @@ abstract class Sprunje
             $result = $this->getCsv();
 
             // Prepare response
-            $settings = http_build_query($this->options);
-            $date = Carbon::now()->format('Ymd');
-            $response = $response->withAddedHeader('Content-Disposition', "attachment;filename=$date-{$this->name}-$settings.csv");
+            $response = $response->withAddedHeader('Content-Disposition', "attachment;filename={$this->name}.csv");
             $response = $response->withAddedHeader('Content-Type', 'text/csv; charset=utf-8');
+
             return $response->write($result);
         // Default to JSON
         } else {
             $result = $this->getArray();
+
             return $response->withJson($result, 200, JSON_PRETTY_PRINT);
         }
     }
@@ -203,6 +208,7 @@ abstract class Sprunje
      *
      * Returns an array containing `count` (the total number of rows, before filtering), `count_filtered` (the total number of rows after filtering),
      * and `rows` (the filtered result set).
+     *
      * @return mixed[]
      */
     public function getArray()
@@ -214,14 +220,14 @@ abstract class Sprunje
             $this->countKey           => $count,
             $this->countFilteredKey   => $countFiltered,
             $this->rowsKey            => $rows->values()->toArray(),
-            $this->listableKey        => $this->getListable()
+            $this->listableKey        => $this->getListable(),
         ];
     }
 
     /**
      * Run the query and build a CSV object by flattening the resulting collection.  Ignores any pagination.
      *
-     * @return SplTempFileObject
+     * @return \SplTempFileObject
      */
     public function getCsv()
     {
@@ -250,6 +256,7 @@ abstract class Sprunje
                     $columnNames[] = $itemKey;
                 }
             }
+
             return $item;
         });
 
@@ -278,6 +285,7 @@ abstract class Sprunje
      * Executes the sprunje query, applying all sorts, filters, and pagination.
      *
      * Returns the filtered, paginated result set and the counts.
+     *
      * @return mixed[]
      */
     public function getModels()
@@ -319,7 +327,7 @@ abstract class Sprunje
         foreach ($this->listable as $name) {
 
             // Determine if a custom filter method has been defined
-            $methodName = 'list'.studly_case($name);
+            $methodName = 'list' . studly_case($name);
 
             if (method_exists($this, $methodName)) {
                 $result[$name] = $this->$methodName();
@@ -345,11 +353,13 @@ abstract class Sprunje
      * Set the underlying QueryBuilder object.
      *
      * @param Builder $query
-     * @return $this
+     *
+     * @return self
      */
     public function setQuery($query)
     {
         $this->query = $query;
+
         return $this;
     }
 
@@ -357,7 +367,8 @@ abstract class Sprunje
      * Apply any filters from the options, calling a custom filter callback when appropriate.
      *
      * @param Builder $query
-     * @return $this
+     *
+     * @return self
      */
     public function applyFilters($query)
     {
@@ -366,6 +377,7 @@ abstract class Sprunje
             if (($name != '_all') && !in_array($name, $this->filterable)) {
                 $e = new BadRequestException();
                 $e->addUserMessage('VALIDATE.SPRUNJE.BAD_FILTER', ['name' => $name]);
+
                 throw $e;
             }
             // Since we want to match _all_ of the fields, we wrap the field callback in a 'where' callback
@@ -381,7 +393,8 @@ abstract class Sprunje
      * Apply any sorts from the options, calling a custom sorter callback when appropriate.
      *
      * @param Builder $query
-     * @return $this
+     *
+     * @return self
      */
     public function applySorts($query)
     {
@@ -390,11 +403,12 @@ abstract class Sprunje
             if (!in_array($name, $this->sortable)) {
                 $e = new BadRequestException();
                 $e->addUserMessage('VALIDATE.SPRUNJE.BAD_SORT', ['name' => $name]);
+
                 throw $e;
             }
 
             // Determine if a custom sort method has been defined
-            $methodName = 'sort'.studly_case($name);
+            $methodName = 'sort' . studly_case($name);
 
             if (method_exists($this, $methodName)) {
                 $this->$methodName($query, $direction);
@@ -410,7 +424,8 @@ abstract class Sprunje
      * Apply pagination based on the `page` and `size` options.
      *
      * @param Builder $query
-     * @return $this
+     *
+     * @return self
      */
     public function applyPagination($query)
     {
@@ -419,7 +434,7 @@ abstract class Sprunje
             ($this->options['size'] !== null) &&
             ($this->options['size'] != 'all')
         ) {
-            $offset = $this->options['size']*$this->options['page'];
+            $offset = $this->options['size'] * $this->options['page'];
             $query->skip($offset)
                   ->take($this->options['size']);
         }
@@ -431,8 +446,9 @@ abstract class Sprunje
      * Match any filter in `filterable`.
      *
      * @param Builder $query
-     * @param mixed $value
-     * @return $this
+     * @param mixed   $value
+     *
+     * @return self
      */
     protected function filterAll($query, $value)
     {
@@ -452,13 +468,14 @@ abstract class Sprunje
      * Build the filter query for a single field.
      *
      * @param Builder $query
-     * @param string $name
-     * @param mixed $value
-     * @return $this
+     * @param string  $name
+     * @param mixed   $value
+     *
+     * @return self
      */
     protected function buildFilterQuery($query, $name, $value)
     {
-        $methodName = 'filter'.studly_case($name);
+        $methodName = 'filter' . studly_case($name);
 
         // Determine if a custom filter method has been defined
         if (method_exists($this, $methodName)) {
@@ -475,9 +492,10 @@ abstract class Sprunje
      * matching any of the supplied values.
      *
      * @param Builder $query
-     * @param string $name
-     * @param mixed $value
-     * @return $this
+     * @param string  $name
+     * @param mixed   $value
+     *
+     * @return self
      */
     protected function buildFilterDefaultFieldQuery($query, $name, $value)
     {
@@ -495,6 +513,7 @@ abstract class Sprunje
      * Set any transformations you wish to apply to the collection, after the query is executed.
      *
      * @param \Illuminate\Database\Eloquent\Collection $collection
+     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     protected function applyTransformations($collection)
@@ -505,7 +524,7 @@ abstract class Sprunje
     /**
      * Set the initial query used by your Sprunje.
      *
-     * @return Builder|Relation|Model
+     * @return Builder|\Illuminate\Database\Eloquent\Relations\Relation|\UserFrosting\Sprinkle\Core\Database\Models\Model
      */
     abstract protected function baseQuery();
 
@@ -514,6 +533,7 @@ abstract class Sprunje
      * Formats results to have a "value" and "text" attribute.
      *
      * @param string $column
+     *
      * @return array
      */
     protected function getColumnValues($column)
@@ -523,9 +543,10 @@ abstract class Sprunje
         foreach ($rawValues as $raw) {
             $values[] = [
                 'value' => $raw[$column],
-                'text' => $raw[$column]
+                'text'  => $raw[$column],
             ];
         }
+
         return $values;
     }
 
@@ -533,6 +554,7 @@ abstract class Sprunje
      * Get the unpaginated count of items (before filtering) in this query.
      *
      * @param Builder $query
+     *
      * @return int
      */
     protected function count($query)
@@ -544,6 +566,7 @@ abstract class Sprunje
      * Get the unpaginated count of items (after filtering) in this query.
      *
      * @param Builder $query
+     *
      * @return int
      */
     protected function countFiltered($query)
@@ -556,7 +579,9 @@ abstract class Sprunje
      *
      * Returns an array containing `count` (the total number of rows, before filtering), `count_filtered` (the total number of rows after filtering),
      * and `rows` (the filtered result set).
+     *
      * @deprecated since 4.1.7  Use getArray() instead.
+     *
      * @return mixed[]
      */
     public function getResults()

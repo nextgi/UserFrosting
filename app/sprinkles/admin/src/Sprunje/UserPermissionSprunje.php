@@ -1,19 +1,20 @@
 <?php
-/**
+
+/*
  * UserFrosting (http://www.userfrosting.com)
  *
  * @link      https://github.com/userfrosting/UserFrosting
- * @license   https://github.com/userfrosting/UserFrosting/blob/master/licenses/UserFrosting.md (MIT License)
+ * @copyright Copyright (c) 2019 Alexander Weissman
+ * @license   https://github.com/userfrosting/UserFrosting/blob/master/LICENSE.md (MIT License)
  */
+
 namespace UserFrosting\Sprinkle\Admin\Sprunje;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
-use UserFrosting\Sprinkle\Core\Facades\Debug;
 use UserFrosting\Support\Exception\BadRequestException;
 use UserFrosting\Support\Exception\NotFoundException;
 
 /**
- * UserPermissionSprunje
+ * UserPermissionSprunje.
  *
  * Implements Sprunje for retrieving a list of permissions for a specified user.
  *
@@ -24,7 +25,7 @@ class UserPermissionSprunje extends PermissionSprunje
     protected $name = 'user_permissions';
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     protected function baseQuery()
     {
@@ -33,11 +34,11 @@ class UserPermissionSprunje extends PermissionSprunje
             throw new BadRequestException();
         }
 
-        $user = $this->classMapper->staticMethod('user', 'find', $this->options['user_id']);
+        $user = $this->classMapper->getClassMapping('user')::find($this->options['user_id']);
 
         // If the user doesn't exist, return 404
         if (!$user) {
-            throw new NotFoundException;
+            throw new NotFoundException();
         }
 
         // Get user permissions
